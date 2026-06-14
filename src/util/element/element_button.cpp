@@ -21,6 +21,8 @@
 #include "hook/uiohook_helper.hpp"
 #include "sources/input_source.hpp"
 
+#include <QJsonArray>
+
 void element_button::load(const QJsonObject &obj)
 {
     element_texture::load(obj);
@@ -29,9 +31,30 @@ void element_button::load(const QJsonObject &obj)
     m_pressed.y = m_mapping.y + m_mapping.cy + CFG_INNER_BORDER;
 }
 
+void element_keyboard_key::load(const QJsonObject &obj)
+{
+    element_button::load(obj); // loads m_keycode from "code" as usual
+
+    // if "code" is an array, load all codes into m_keycodes instead
+    if (obj[CFG_KEY_CODE].isArray()) {
+        m_keycodes.clear();
+        for (const auto &v : obj[CFG_KEY_CODE].toArray())
+            m_keycodes.push_back(static_cast<uint16_t>(v.toInt()));
+    }
+}
+
 void element_keyboard_key::draw(gs_effect_t *effect, gs_image_file_t *image, sources::overlay_settings *settings)
 {
-    if (settings->data.keyboard[m_keycode])
+    bool pressed;
+    if (m_keycodes.empty()) {
+        pressed = settings->data.keyboard[m_keycode];
+    } else {
+        pressed = true;
+        for (auto code : m_keycodes)
+            pressed = pressed && settings->data.keyboard[code];
+    }
+
+    if (pressed)
         element_texture::draw(effect, image, &m_pressed);
     else
         element_button::draw(effect, image, nullptr);

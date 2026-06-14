@@ -453,12 +453,24 @@ void overlay::load_element(const QJsonObject &obj, bool debug, bool needs_conver
         new_element->load(obj);
         if (new_element->get_type() == ET_KEYBOARD_KEY && needs_conversion) {
             auto *key_element = static_cast<element_keyboard_key *>(new_element);
-            const auto keycode = key_element->get_keycode();
-            const auto it = keyCodeMap.find(keycode);
-            if (it != keyCodeMap.end()) {
-                key_element->set_keycode(it->second);
-            } else {
-                bwarn("Failed to convert keycode 0x%04X for element '%s'", keycode, qt_to_utf8(obj[CFG_ID].toString()));
+            
+            // convert multi-key vector if present
+            for (auto &code : key_element->get_keycodes()) {
+                const auto it = keyCodeMap.find(code);
+                if (it != keyCodeMap.end())
+                    code = it->second;
+                else
+                    bwarn("Failed to convert keycode 0x%04X for element '%s'", code, qt_to_utf8(obj[CFG_ID].toString()));
+            }
+            
+            // also convert single keycode
+            if (key_element->get_keycodes().empty()) {
+                const auto keycode = key_element->get_keycode();
+                const auto it = keyCodeMap.find(keycode);
+                if (it != keyCodeMap.end())
+                    key_element->set_keycode(it->second);
+                else
+                    bwarn("Failed to convert keycode 0x%04X for element '%s'", keycode, qt_to_utf8(obj[CFG_ID].toString()));
             }
         }
         m_elements.emplace_back(new_element);

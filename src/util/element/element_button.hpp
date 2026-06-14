@@ -20,6 +20,7 @@
 
 #include "element_texture.hpp"
 #include <layout_constants.h>
+#include <vector>
 
 class element_button : public element_texture {
 public:
@@ -38,8 +39,11 @@ protected:
 class element_keyboard_key : public element_button {
 public:
     element_keyboard_key() : element_button(ET_KEYBOARD_KEY) {}
-
+    void load(const QJsonObject &obj) override;
     void draw(gs_effect_t *effect, gs_image_file_t *image, sources::overlay_settings *settings) override;
+    std::vector<uint16_t> &get_keycodes() { return m_keycodes; } // getter for m_keycodes
+private:
+    std::vector<uint16_t> m_keycodes; // empty = use inherited m_keycode (single key)
 };
 
 class element_mouse_button : public element_button {
