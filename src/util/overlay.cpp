@@ -462,6 +462,15 @@ void overlay::load_element(const QJsonObject &obj, bool debug, bool needs_conver
                 else
                     bwarn("Failed to convert keycode 0x%04X for element '%s'", code, qt_to_utf8(obj[CFG_ID].toString()));
             }
+
+            // convert nocodes
+            for (auto &code : key_element->get_nocodes()) {
+                const auto it = keyCodeMap.find(code);
+                if (it != keyCodeMap.end())
+                    code = it->second;
+                else
+                    bwarn("Failed to convert nocode 0x%04X for element '%s'", code, qt_to_utf8(obj[CFG_ID].toString()));
+            }
             
             // also convert single keycode
             if (key_element->get_keycodes().empty()) {

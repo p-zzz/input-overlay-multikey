@@ -42,6 +42,7 @@ public:
     void load(const QJsonObject &obj) override;
     void draw(gs_effect_t *effect, gs_image_file_t *image, sources::overlay_settings *settings) override;
     std::vector<uint16_t> &get_keycodes() { return m_keycodes; } // getter for m_keycodes
+    std::vector<uint16_t> &get_nocodes() { return m_nocodes; } // getter for m_nocodes
 private:
     std::vector<uint16_t> m_keycodes; // empty = use inherited m_keycode (single key)
     std::vector<uint16_t> m_nocodes;
