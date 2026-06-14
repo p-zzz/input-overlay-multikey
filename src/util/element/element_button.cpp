@@ -42,10 +42,26 @@ void element_keyboard_key::load(const QJsonObject &obj)
             m_keycodes.push_back(static_cast<uint16_t>(v.toInt()));
     }
     m_any_key = obj["multikeyflip"].toInt(0) == 1;
+
+    // load nocode as single value or array
+    if (obj["nocode"].isArray()) {
+        for (const auto &v : obj["nocode"].toArray())
+            m_nocodes.push_back(static_cast<uint16_t>(v.toInt()));
+    } else if (!obj["nocode"].isUndefined()) {
+        m_nocodes.push_back(static_cast<uint16_t>(obj["nocode"].toInt()));
+    }
 }
 
 void element_keyboard_key::draw(gs_effect_t *effect, gs_image_file_t *image, sources::overlay_settings *settings)
 {
+    // if any nocode key is held, don't activate
+    for (auto code : m_nocodes) {
+        if (settings->data.keyboard[code]) {
+            element_button::draw(effect, image, nullptr);
+            return;
+        }
+    }
+    
     bool pressed;
     if (m_keycodes.empty()) {
         pressed = settings->data.keyboard[m_keycode];
