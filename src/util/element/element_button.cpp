@@ -33,7 +33,7 @@ void element_button::load(const QJsonObject &obj)
 
 void element_keyboard_key::load(const QJsonObject &obj)
 {
-    element_button::load(obj); // loads m_keycode from "code" as usual
+    element_button::load(obj); // loads m_keycode from "code"
 
     // if "code" is an array, load all codes into m_keycodes instead
     if (obj[CFG_KEY_CODE].isArray()) {
@@ -41,6 +41,7 @@ void element_keyboard_key::load(const QJsonObject &obj)
         for (const auto &v : obj[CFG_KEY_CODE].toArray())
             m_keycodes.push_back(static_cast<uint16_t>(v.toInt()));
     }
+    m_any_key = obj["multikeyflip"].toInt(0) == 1;
 }
 
 void element_keyboard_key::draw(gs_effect_t *effect, gs_image_file_t *image, sources::overlay_settings *settings)
@@ -49,9 +50,13 @@ void element_keyboard_key::draw(gs_effect_t *effect, gs_image_file_t *image, sou
     if (m_keycodes.empty()) {
         pressed = settings->data.keyboard[m_keycode];
     } else {
-        pressed = true;
-        for (auto code : m_keycodes)
-            pressed = pressed && settings->data.keyboard[code];
+        pressed = !m_any_key;
+        for (auto code : m_keycodes) {
+            if (m_any_key)
+                pressed = pressed || settings->data.keyboard[code];
+            else
+                pressed = pressed && settings->data.keyboard[code];
+        }
     }
 
     if (pressed)

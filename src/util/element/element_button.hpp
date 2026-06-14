@@ -44,6 +44,7 @@ public:
     std::vector<uint16_t> &get_keycodes() { return m_keycodes; } // getter for m_keycodes
 private:
     std::vector<uint16_t> m_keycodes; // empty = use inherited m_keycode (single key)
+    bool m_any_key = false; // true = OR, false = AND
 };
 
 class element_mouse_button : public element_button {
